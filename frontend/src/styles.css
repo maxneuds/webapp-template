@@ -1,0 +1,18 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Center content vertically */
+  }
+  
+  .banner {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #98fb98; /* Pastel green */
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    overflow: hidden; /* Ensures content doesn't overflow during animation */
+  }

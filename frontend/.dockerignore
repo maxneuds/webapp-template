@@ -1,0 +1,35 @@
+# Exclude node_modules to prevent copying the local dependencies
+node_modules
+npm-debug.log
+
+# Angular build output (dist is generated during the build step in Dockerfile)
+dist
+out-tsc
+
+# IDE-specific files
+.idea
+.vscode
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary and backup files
+*.tmp
+*.bak
+*.swp
+
+# Environment files (avoid leaking secrets)
+.env
+.env.*.local
+
+# Git files
+.git
+.gitignore
+
+# Exclude Docker-related files (optional, if not needed in the container)
+Dockerfile
+.dockerignore

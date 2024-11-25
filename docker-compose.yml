@@ -1,0 +1,40 @@
+services:
+  angular-frontend:
+    build:
+      context: ./angular-frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+    networks:
+      - external
+      - internal
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      # - "5000:5000" # accessed directly by containers, not exposed publicly
+    depends_on:
+      - mongo
+    networks:
+      - internal
+
+  mongo:
+    image: mongo:5
+    container_name: mongo
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - internal
+
+volumes:
+  mongo-data:
+
+networks:
+  external:
+    driver: bridge
+  internal:
+    driver: bridge
+
+
