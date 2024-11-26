@@ -1,7 +1,7 @@
 services:
   angular-frontend:
     build:
-      context: ./angular-frontend
+      context: ./frontend
     ports:
       - "4200:4200"
     depends_on:
@@ -9,7 +9,6 @@ services:
     networks:
       - external
       - internal
-
   backend:
     build:
       context: ./backend
@@ -20,16 +19,6 @@ services:
     networks:
       - internal
 
-  mongo:
-    image: mongo:5
-    container_name: mongo
-    volumes:
-      - mongo-data:/data/db
-    networks:
-      - internal
-
-volumes:
-  mongo-data:
 
 networks:
   external:

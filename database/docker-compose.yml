@@ -1,0 +1,54 @@
+services:
+  dev:
+    image: mongo:8-noble
+    container_name: mongodb-dev
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER_DEV}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PW_DEV}
+    ports:
+      - "${MONGO_PORT_DEV}:27017"
+    volumes:
+      - mongodb_data_dev:/data/db
+    networks:
+      - net_mongodb
+
+  test:
+    image: mongo:8-noble
+    container_name: mongodb-test
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER_TEST}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PW_TEST}
+    ports:
+      - ${MONGO_PORT_TEST}:27017
+    volumes:
+      - mongodb_data_test:/data/db
+    networks:
+      - net_mongodb
+
+  prod:
+    image: mongo:8-noble
+    container_name: mongodb-prod
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER_PROD}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PW_PROD}
+    ports:
+      - "${MONGO_PORT_PROD}:27017"
+    volumes:
+      - mongodb_data_prod:/data/db
+    networks:
+      - net_mongodb
+
+volumes:
+  mongodb_data_dev:
+    external: true
+  mongodb_data_test:
+    external: true
+  mongodb_data_prod:
+   external: true
+
+networks:
+  net_mongodb:
+    external: true

@@ -1,0 +1,37 @@
+{
+  "name": "PyMongo3.12",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "workspaceFolder": "/workspace/dev",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/dev,type=bind",
+  "forwardPorts": [8000],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter",
+        "ms-toolsai.datawrangle",
+        "ms-azuretools.vscode-docker",
+        "johnpapa.vscode-peacock",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "mhutchie.git-graph"
+        // "github.copilot"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "editor.formatOnSave": true,
+        "eslint.format.enable": true
+      }
+    }
+  },
+  // "postCreateCommand": "npm install",
+  // "remoteUser": "node",
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind"
+    // "source=${localEnv:HOME}/.aws,target=/root/.aws,type=bind"
+  ]
+}
