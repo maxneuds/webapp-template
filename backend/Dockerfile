@@ -1,24 +1,36 @@
-FROM ghcr.io/oracle/oraclelinux8-instantclient:21 AS oracle_client
-
 FROM python:3.12.7-bookworm
 
-# <-- ORACLE DB -->
-# copy Oracle Instant Client files from the oracle instant client image
-COPY --from=oracle_client /usr/lib/oracle /usr/lib/oracle
-RUN apt-get update && apt-get install -y \
-    libaio1 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-RUN ldconfig
-# <-- ORACLE DB -->
+# Update pip and install poetry
+RUN pip install --upgrade pip
+RUN pip install poetry
 
-# <-- DEVCONTAINER -->
-# The following is a list of packages that are installed in the devcontainer
-# Install zsh and other necessary packages
+# <- MongoDB ->
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+# <- MongoDB ->
+
+# <- DEVCONTAINER ->
+# Install zsh and other useful packages
 RUN apt-get update && apt-get install -y \
     git wget curl unzip rsync zsh htop vim neofetch \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Install oh-my-zsh
+RUN sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" "" --unattended
+# enable command completion and git support in zsh
+RUN git clone https://github.com/zsh-users/zsh-completions ~/.oh-my-zsh/custom/plugins/zsh-completions
+RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+RUN git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+RUN sed -i 's/plugins=(git)/plugins=(git zsh-completions zsh-syntax-highlighting zsh-autosuggestions)/' ~/.zshrc
+RUN sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="agnoster"/' ~/.zshrc
+RUN echo 'prompt_context() {}' >> ~/.zshrc
+# Command alias
+RUN echo 'alias ll="ls -lah --color=auto"' >> ~/.zshrc
+RUN echo 'alias cp="rsync -avh --progress"' >> ~/.zshrc
 # Install Docker
 ARG docker_gid=999
 RUN groupadd -g ${docker_gid} docker
@@ -35,56 +47,19 @@ RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/d
 RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-# <-- DEVCONTAINER -->
-
-# update pip and install poetry
-RUN pip install --upgrade pip
-RUN pip install poetry
-
-# create user "worker" and set zsh as the default shell
-ARG user=worker
-ARG group=worker
-ARG uid=1000
-ARG gid=1000
-RUN groupadd -g ${gid} ${group}
-RUN useradd -u ${uid} -g ${group} -m -s /bin/zsh ${user}
-RUN mkdir /workspace
-RUN chown worker:worker /workspace
-
-# <-- DEVCONTAINER -->
-# add user to the docker group
-RUN usermod -aG docker worker
-# <-- DEVCONTAINER -->
-
-USER worker
-WORKDIR /workspace
-
-# <-- DEVCONTAINER -->
-# install python devtools
+# Install aws tools
 RUN pip install awscli
-# install oh-my-zsh for the "worker" user
-RUN sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" "" --unattended
-# enable command completion and git support in zsh
-RUN git clone https://github.com/zsh-users/zsh-completions ~/.oh-my-zsh/custom/plugins/zsh-completions
-RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
-RUN git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
-RUN sed -i 's/plugins=(git)/plugins=(git zsh-completions zsh-syntax-highlighting zsh-autosuggestions)/' ~/.zshrc
-RUN sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="agnoster"/' ~/.zshrc
-RUN echo 'prompt_context() {}' >> ~/.zshrc
-# command alias
-RUN echo 'alias ll="ls -lah --color=auto"' >> ~/.zshrc
-RUN echo 'alias cp="rsync -avh --progress"' >> ~/.zshrc
-# <-- DEVCONTAINER -->
+# <- DEVCONTAINER ->
 
-# <-- ORACLE DB -->
-# set environment variables for Oracle Instant Client
-ENV LD_LIBRARY_PATH=/usr/lib/oracle/21/client64/lib
-ENV PATH=$PATH:/usr/lib/oracle/21/client64/bin
-# <-- ORACLE DB -->
-
-# set environment variables for poetry
+# Set environment variables for poetry
 ENV POETRY_VIRTUALENVS_CREATE=true
 ENV POETRY_VIRTUALENVS_IN_PROJECT=true
 ENV POETRY_NO_INTERACTION=1
 
+# Set working directory
+WORKDIR /workspace
+
+# Entrypoint to run the application using poetry and uvicorn
+EXPOSE 8000
+ENTRYPOINT ["poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 

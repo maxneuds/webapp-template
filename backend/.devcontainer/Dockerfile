@@ -1,16 +1,36 @@
-FROM node:22-bookworm 
+FROM python:3.12.7-bookworm
+
+# Update pip and install poetry
+RUN pip install --upgrade pip
+RUN pip install poetry
+
+# <- MongoDB ->
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+# <- MongoDB ->
 
 # <- DEVCONTAINER ->
-# Install missing locales in node container
-RUN apt-get update && apt-get install -y locales locales-all
-ENV LC_ALL en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US.UTF-8
-# Install zsh and other necessary packages
+# Install zsh and other useful packages
 RUN apt-get update && apt-get install -y \
     git wget curl unzip rsync zsh htop vim neofetch \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Install oh-my-zsh
+RUN sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" "" --unattended
+# enable command completion and git support in zsh
+RUN git clone https://github.com/zsh-users/zsh-completions ~/.oh-my-zsh/custom/plugins/zsh-completions
+RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+RUN git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+RUN sed -i 's/plugins=(git)/plugins=(git zsh-completions zsh-syntax-highlighting zsh-autosuggestions)/' ~/.zshrc
+RUN sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="agnoster"/' ~/.zshrc
+RUN echo 'prompt_context() {}' >> ~/.zshrc
+# Command alias
+RUN echo 'alias ll="ls -lah --color=auto"' >> ~/.zshrc
+RUN echo 'alias cp="rsync -avh --progress"' >> ~/.zshrc
 # Install Docker
 ARG docker_gid=999
 RUN groupadd -g ${docker_gid} docker
@@ -27,20 +47,15 @@ RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/d
 RUN apt-get update && apt-get install -y docker-ce docker-ce-cli containerd.io \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-# install oh-my-zsh
-RUN sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)" "" --unattended
-# enable command completion and git support in zsh
-RUN git clone https://github.com/zsh-users/zsh-completions ~/.oh-my-zsh/custom/plugins/zsh-completions
-RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
-RUN git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
-RUN sed -i 's/plugins=(git)/plugins=(git zsh-completions zsh-syntax-highlighting zsh-autosuggestions)/' ~/.zshrc
-RUN sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="agnoster"/' ~/.zshrc
-RUN echo 'prompt_context() {}' >> ~/.zshrc
-# command alias
-RUN echo 'alias ll="ls -lah --color=auto"' >> ~/.zshrc
-RUN echo 'alias cp="rsync -avh --progress"' >> ~/.zshrc
+# Install aws tools
+RUN pip install awscli
 # <- DEVCONTAINER ->
 
-WORKDIR /workspace/dev
+# Set environment variables for poetry
+ENV POETRY_VIRTUALENVS_CREATE=true
+ENV POETRY_VIRTUALENVS_IN_PROJECT=true
+ENV POETRY_NO_INTERACTION=1
 
+# Set working directory
+WORKDIR /workspace/dev
 

@@ -3,6 +3,7 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
+  "remoteUser": "root",
   "workspaceFolder": "/workspace/dev",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace/dev,type=bind",
   "forwardPorts": [8000],
@@ -11,9 +12,11 @@
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
+        "donjayamanne.python-environment-manager",
         "ms-toolsai.jupyter",
         "ms-toolsai.datawrangle",
         "ms-azuretools.vscode-docker",
+        "irongeek.vscode-env",
         "johnpapa.vscode-peacock",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
@@ -27,8 +30,6 @@
       }
     }
   },
-  // "postCreateCommand": "npm install",
-  // "remoteUser": "node",
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
     "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind"

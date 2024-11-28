@@ -1,5 +1,5 @@
 # Webapp Template
-A template for a webapp with python Fastapi backend and Angular frontend running data pipelines on MongoDB.
+A template for a data-driven webapp with Python fastapi backend and Angular frontend running ETL pipelines on MongoDB.
 
 # Preparation
 
